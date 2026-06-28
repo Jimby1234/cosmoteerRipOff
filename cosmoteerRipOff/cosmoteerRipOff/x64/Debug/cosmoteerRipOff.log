@@ -1,0 +1,10 @@
+﻿  raylibGame.cpp
+C:\Users\joshu\source\repos\cosmoteerRipOff\cosmoteerRipOff\raylibGame.cpp(49,85): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\joshu\source\repos\cosmoteerRipOff\cosmoteerRipOff\raylibGame.cpp(49,67): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\joshu\source\repos\cosmoteerRipOff\cosmoteerRipOff\raylibGame.cpp(50,85): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\joshu\source\repos\cosmoteerRipOff\cosmoteerRipOff\raylibGame.cpp(50,67): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\joshu\source\repos\cosmoteerRipOff\cosmoteerRipOff\raylibGame.cpp(49,55): warning C4838: conversion from 'int' to 'float' requires a narrowing conversion
+C:\Users\joshu\source\repos\cosmoteerRipOff\cosmoteerRipOff\raylibGame.cpp(49,55): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+C:\Users\joshu\source\repos\cosmoteerRipOff\cosmoteerRipOff\raylibGame.cpp(50,55): warning C4838: conversion from 'int' to 'float' requires a narrowing conversion
+C:\Users\joshu\source\repos\cosmoteerRipOff\cosmoteerRipOff\raylibGame.cpp(50,55): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+  cosmoteerRipOff.vcxproj -> C:\Users\joshu\source\repos\cosmoteerRipOff\cosmoteerRipOff\x64\Debug\cosmoteerRipOff.exe
