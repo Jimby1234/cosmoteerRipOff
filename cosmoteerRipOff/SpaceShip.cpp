@@ -71,7 +71,7 @@ void SpaceShip::drawWorldSpaceShip()
     }
 }
 
-void SpaceShip::drawScreenSpaceShip()
+void SpaceShip::drawScreenSpaceShip(GameContext& gameContext)
 {
     Vector2 centre = {
         (std::size(tiles[0]) * TILE_SIZE) / 2.0f,
@@ -104,12 +104,20 @@ void SpaceShip::drawScreenSpaceShip()
             Texture2D tex = tile.getTexture();
             Rectangle source = { 0, 0, (float)tex.width, (float)tex.height };
 
-            DrawTexturePro(tex, source, rect, origin, tileLocalRotation, WHITE);
+            if (gameContext.gameState == GameState::BuildTiles)
+            {
+                DrawTexturePro(tex, source, rect, origin, tileLocalRotation, WHITE);
+            }
+            else if (gameContext.gameState == GameState::BuildPipes)
+            {
+                DrawTexturePro(tex, source, rect, origin, tileLocalRotation, {255,255,255,130});
+            }
+            
         }
     }
 }
 
-void SpaceShip::checkPlaceRemoveTile(Vector2 mousePos, Textures texture, TileActionType tileActionType)
+void SpaceShip::checkPlaceRemoveTile(Vector2& mousePos, Textures& texture, GameContext& gameContext)
 {
     Vector2 centre = { (std::size(tiles[0]) * TILE_SIZE) / 2.0f, (std::size(tiles) * TILE_SIZE) / 2.0f };
 
@@ -119,7 +127,7 @@ void SpaceShip::checkPlaceRemoveTile(Vector2 mousePos, Textures texture, TileAct
     bool inBounds = isInBounds(gridX, gridY);
 
 
-    if (tileActionType == TileActionType::Remove)
+    if (gameContext.tileActionType == TileActionType::Remove)
     {
         //checks to see if the amount of tile connected in a certain direction is equal to the amount of all the tiles in the ship
         int amountOfTiles = countConnectedArea({ (float)gridX, (float)gridY });
@@ -134,28 +142,29 @@ void SpaceShip::checkPlaceRemoveTile(Vector2 mousePos, Textures texture, TileAct
     {
         if ((!tiles[gridY][gridX] and hasNeighBour(gridX, gridY) and inBounds) or (!tiles[gridY][gridX] and tileAmount == 0 and inBounds))
         {
-            if (tileActionType == TileActionType::Walkway) tiles[gridY][gridX] = std::make_unique<Tile>(texture.walkwayTile, 1.0f);
-            else if (tileActionType == TileActionType::Shield) tiles[gridY][gridX] = std::make_unique<Tile>(texture.shieldTile, 5.0f);
-            else if (tileActionType == TileActionType::ThrusterUp)
+
+            if (gameContext.tileActionType == TileActionType::Walkway) tiles[gridY][gridX] = std::make_unique<Tile>(texture.walkwayTile, 1.0f);
+            else if (gameContext.tileActionType == TileActionType::Shield) tiles[gridY][gridX] = std::make_unique<Tile>(texture.shieldTile, 5.0f);
+            else if (gameContext.tileActionType == TileActionType::ThrusterUp)
             {
                 //                                               texture                 rot force  mass        
                 tiles[gridY][gridX] = std::make_unique<Thruster>(texture.thrusterOffTile, 0, 11000.0f, 10.0f);
                 upThrusters.push_back(Vector2{ (float)gridX, (float)gridY });
             }
 
-            else if (tileActionType == TileActionType::ThrusterRight)
+            else if (gameContext.tileActionType == TileActionType::ThrusterRight)
             {
                 tiles[gridY][gridX] = std::make_unique<Thruster>(texture.thrusterOffTile, 90, 11000.0f, 10.0f);
                 rightThrusters.push_back(Vector2{ (float)gridX, (float)gridY });
             }
 
-            else if (tileActionType == TileActionType::ThrusterDown)
+            else if (gameContext.tileActionType == TileActionType::ThrusterDown)
             {
                 tiles[gridY][gridX] = std::make_unique<Thruster>(texture.thrusterOffTile, 180, 11000.0f, 10.0f);
                 downThrusters.push_back(Vector2{ (float)gridX, (float)gridY });
             }
 
-            else if (tileActionType == TileActionType::ThrusterLeft)
+            else if (gameContext.tileActionType == TileActionType::ThrusterLeft)
             {
                 tiles[gridY][gridX] = std::make_unique<Thruster>(texture.thrusterOffTile, 270, 11000.0f, 10.0f);
                 leftThrusters.push_back(Vector2{ (float)gridX, (float)gridY });
@@ -437,52 +446,148 @@ int SpaceShip::countConnectedArea(Vector2 start)
     return visited.size();
 }
 
-void SpaceShip::drawTileOnMouse(Vector2 mousePos, Textures texture, TileActionType tileActionType)
+void SpaceShip::drawTileOnMouse(Vector2& mousePos, Textures& texture, GameContext gameContext)
 {
-    int x = (int)floorf(mousePos.x / TILE_SIZE);
+    int x = (int)floorf(mousePos.x / TILE_SIZE) ;
     int y = (int)floorf(mousePos.y / TILE_SIZE);
+    //check to see if tile exists
 
-    Rectangle rect = {
+    if (tiles[y + BUILD_SIZE / 2][x + BUILD_SIZE / 2] == nullptr and gameContext.gameState == GameState::BuildTiles)
+    {
+        Rectangle rect = {
         (float)(x * TILE_SIZE) + TILE_SIZE / 2.0f,
         (float)(y * TILE_SIZE) + TILE_SIZE / 2.0f,
         TILE_SIZE,
         TILE_SIZE
-    };
+        };
 
-    //{} to initialize memory wtf
-    Texture2D tex{};
-    float rotation{};
-    if (tileActionType == TileActionType::Walkway)
-    {
-        tex = texture.walkwayTile;
-        rotation = 0;
+        //{} to initialize memory wtf
+        Texture2D tex{};
+        float rotation = 0;
+        if (gameContext.tileActionType == TileActionType::Walkway)
+        {
+            tex = texture.walkwayTile;
+            rotation = 0;
+        }
+        else if (gameContext.tileActionType == TileActionType::Shield)
+        {
+            tex = texture.shieldTile;
+            rotation = 0;
+        }
+        else if (gameContext.tileActionType == TileActionType::ThrusterUp)
+        {
+            tex = texture.thrusterOffTile;
+            rotation = 0;
+        }
+        else if (gameContext.tileActionType == TileActionType::ThrusterRight)
+        {
+            tex = texture.thrusterOffTile;
+            rotation = 90;
+        }
+        else if (gameContext.tileActionType == TileActionType::ThrusterDown)
+        {
+            tex = texture.thrusterOffTile;
+            rotation = 180;
+        }
+        else if (gameContext.tileActionType == TileActionType::ThrusterLeft)
+        {
+            tex = texture.thrusterOffTile;
+            rotation = 270;
+        }
+        DrawTexturePro(tex, { 0,0,TILE_SIZE,TILE_SIZE }, rect, { TILE_SIZE / 2.0f, TILE_SIZE / 2.0f }, rotation, WHITE);
     }
-    else if (tileActionType == TileActionType::Shield)
+    else if (tiles[y + BUILD_SIZE / 2][x + BUILD_SIZE / 2] == nullptr && gameContext.gameState == GameState::BuildPipes)
     {
-        tex = texture.shieldTile;
-        rotation = 0;
+        TileActionType type = getPipeType(pipes, { (float)x, (float)y });
+
+        Texture2D tex{};
+        float rotation = 0;
+
+        switch (type)
+        {
+        case TileActionType::PipeStart:
+            tex = texture.pipeStart;
+            break;
+
+        case TileActionType::PipeIntersection:
+            tex = texture.pipeIntersection;
+            break;
+
+        case TileActionType::PipeEndUp:
+            tex = texture.pipeEnd;
+            rotation = 0;
+            break;
+
+        case TileActionType::PipeEndRight:
+            tex = texture.pipeEnd;
+            rotation = 90;
+            break;
+
+        case TileActionType::PipeEndDown:
+            tex = texture.pipeEnd;
+            rotation = 180;
+            break;
+
+        case TileActionType::PipeEndLeft:
+            tex = texture.pipeEnd;
+            rotation = 270;
+            break;
+
+        case TileActionType::PipeStraightUp:
+            tex = texture.pipeStraight;
+            rotation = 0;
+            break;
+
+        case TileActionType::PipeStraightRight:
+            tex = texture.pipeStraight;
+            rotation = 90;
+            break;
+
+        case TileActionType::PipeBentUR:
+            tex = texture.pipeBent;
+            rotation = 0;
+            break;
+
+        case TileActionType::PipeBentDR:
+            tex = texture.pipeBent;
+            rotation = 90;
+            break;
+
+        case TileActionType::PipeBentLD:
+            tex = texture.pipeBent;
+            rotation = 180;
+            break;
+
+        case TileActionType::PipeBentUL:
+            tex = texture.pipeBent;
+            rotation = 270;
+            break;
+
+        case TileActionType::PipeTURD:
+            tex = texture.pipeTJunction;
+            rotation = 0;
+            break;
+
+        case TileActionType::PipeTRDL:
+            tex = texture.pipeTJunction;
+            rotation = 90;
+            break;
+
+        case TileActionType::PipeDLU:
+            tex = texture.pipeTJunction;
+            rotation = 180;
+            break;
+
+        case TileActionType::PipeLUR:
+            tex = texture.pipeTJunction;rotation = 270;
+            break;
+        }
+
+        Rectangle rect = {(float)(x * TILE_SIZE) + TILE_SIZE / 2.0f,(float)(y * TILE_SIZE) + TILE_SIZE / 2.0f,TILE_SIZE,TILE_SIZE};
+
+        DrawTexturePro(tex, { 0, 0, TILE_SIZE, TILE_SIZE }, rect, { TILE_SIZE / 2.0f, TILE_SIZE / 2.0f }, rotation, WHITE);
     }
-    else if (tileActionType == TileActionType::ThrusterUp)
-    {
-        tex = texture.thrusterOffTile;
-        rotation = 0;
-    }
-    else if (tileActionType == TileActionType::ThrusterRight)
-    {
-        tex = texture.thrusterOffTile;
-        rotation = 90;
-    }
-    else if (tileActionType == TileActionType::ThrusterDown)
-    {
-        tex = texture.thrusterOffTile;
-        rotation = 180;
-    }
-    else if (tileActionType == TileActionType::ThrusterLeft)
-    {
-        tex = texture.thrusterOffTile;
-        rotation = 270;
-    }  
-    DrawTexturePro(tex, { 0,0,TILE_SIZE,TILE_SIZE}, rect, { TILE_SIZE / 2.0f, TILE_SIZE / 2.0f }, rotation, WHITE);
+    
 }
 
 void SpaceShip::whichVectorToAppendTo(Vector2 grid, TileActionType tileActionType)

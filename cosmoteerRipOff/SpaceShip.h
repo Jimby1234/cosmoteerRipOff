@@ -17,13 +17,13 @@ public:
 
     void drawWorldSpaceShip();
 
-    void drawScreenSpaceShip();
+    void drawScreenSpaceShip(GameContext& gameContext);
 
-    void checkPlaceRemoveTile(Vector2 mousePos, Textures texture, TileActionType tileActionType);
+    void checkPlaceRemoveTile(Vector2& mousePos, Textures& texture, GameContext& gameContext);
 
     void move(float dt, Textures texture);
 
-    void drawTileOnMouse(Vector2 mousePos, Textures texture, TileActionType tileActionType);
+    void drawTileOnMouse(Vector2& mousePos, Textures& texture, GameContext gameContext);
 
     void rebuildRotationVectors();
 
@@ -43,6 +43,7 @@ private:
     float rotation;
     int tileAmount;
     std::unique_ptr<Tile> tiles[BUILD_SIZE][BUILD_SIZE];
+    std::unique_ptr<Pipe> pipes[BUILD_SIZE][BUILD_SIZE];
     std::vector<Vector2> upThrusters;
     std::vector<Vector2> rightThrusters;
     std::vector<Vector2> downThrusters;

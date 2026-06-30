@@ -1,2 +1,4 @@
-﻿  raylibGame.cpp
+﻿  SpaceShip.cpp
+C:\Users\joshu\source\repos\cosmoteerRipOff\cosmoteerRipOff\SpaceShip.cpp(391,38): warning C4244: '+=': conversion from 'float' to 'int', possible loss of data
+C:\Users\joshu\source\repos\cosmoteerRipOff\cosmoteerRipOff\SpaceShip.cpp(446,24): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
   cosmoteerRipOff.vcxproj -> C:\Users\joshu\source\repos\cosmoteerRipOff\x64\Debug\cosmoteerRipOff.exe

@@ -50,3 +50,12 @@ private:
     int rotation;
     float force;
 };
+
+class Pipe : public Tile {
+public:
+    Pipe(Texture2D tex, int rot, float kg) : Tile(tex, kg){
+        rotation = rot;
+    }
+private:
+    int rotation;
+};

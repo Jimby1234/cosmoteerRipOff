@@ -4,11 +4,13 @@
 #include <rlgl.h>
 #include <cmath>
 #include <vector>
+#include "Tile.h"
+#include "constants.h"
 
 const char* gameStateToString(GameState state) {
     switch (state) {
-    case GameState::BuildTiles: return "build";
-    case GameState::BuildPipes: return "build";
+    case GameState::BuildTiles: return "buildT";
+    case GameState::BuildPipes: return "buildP";
     case GameState::Play:  return "play";
     default:               return "unknown";
     }
@@ -97,19 +99,57 @@ bool TrackedGuiButton(std::vector<Rectangle>& uiRects, Rectangle rect, const cha
     return GuiButton(rect, label);
 }
 
-void buildUIRects(std::vector<Rectangle>& uiRects, GameState gameState)
+bool TrackedGuiDropdownBox(std::vector<Rectangle>& uiRects, Rectangle bounds,const char* text, int* active, bool editMode)
 {
-    uiRects.clear();
-    if (gameState == GameState::BuildTiles or gameState == GameState::BuildPipes)
+    if (editMode)
     {
-        float buttonWidth = 80.0f;
-        float buttonHeight = 40.0f;
-        float spacing = 20.0f;
-        float totalWidth = 4 * buttonWidth + 3 * spacing;
-        float startX = (GetScreenWidth() - totalWidth) / 2.0f;
-        float y = (float)GetScreenHeight() - 50;
+        int itemCount = 1;
+        for (const char* p = text; *p; p++)
+            if (*p == ';') itemCount++;
+        Rectangle expanded = { bounds.x, bounds.y,bounds.width, bounds.height * (itemCount + 1) };
+        uiRects.push_back(expanded);
+    }
+    else
+    {
+        uiRects.push_back(bounds);
+    }
 
-        for (int i = 0; i < 4; i++)
-            uiRects.push_back({ startX + i * (buttonWidth + spacing), y, buttonWidth, buttonHeight });
+    return GuiDropdownBox(bounds, text, active, editMode);
+}
+
+TileActionType getPipeType(std::unique_ptr<Pipe> pipes[BUILD_SIZE][BUILD_SIZE], Vector2 mousePos)
+{
+    int mask = 0;
+
+    if (pipes[(int)mousePos.y][(int)mousePos.x]) mask |= UP;
+    if (pipes[(int)mousePos.y][(int)mousePos.x]) mask |= RIGHT;
+    if (pipes[(int)mousePos.y][(int)mousePos.x]) mask |= DOWN;
+    if (pipes[(int)mousePos.y][(int)mousePos.x]) mask |= LEFT;
+
+    switch (mask)
+    {
+    case 0b0000: return TileActionType::PipeStart;
+
+    case 0b0001: return TileActionType::PipeEndUp;
+    case 0b0010: return TileActionType::PipeEndRight;
+    case 0b0100: return TileActionType::PipeEndDown;
+    case 0b1000: return TileActionType::PipeEndLeft;
+
+    case 0b0101: return TileActionType::PipeStraightUp;
+    case 0b1010: return TileActionType::PipeStraightRight;
+
+    case 0b0110: return TileActionType::PipeBentDR;
+    case 0b1100: return TileActionType::PipeBentLD;
+    case 0b1001: return TileActionType::PipeBentUL;
+    case 0b0011: return TileActionType::PipeBentUR;
+
+    case 0b0111: return TileActionType::PipeTURD;
+    case 0b1110: return TileActionType::PipeTRDL;
+    case 0b1101: return TileActionType::PipeDLU;
+    case 0b1011: return TileActionType::PipeLUR;
+
+    case 0b1111: return TileActionType::PipeIntersection;
+
+    default: return TileActionType::PipeStart;
     }
 }

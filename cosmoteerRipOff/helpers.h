@@ -2,7 +2,9 @@
 #include "constants.h"
 #include <raylib.h>
 #include <vector>
+#include <memory>
 #include "raygui.h"
+#include "Tile.h"
 
 const char* gameStateToString(GameState gameState);
 
@@ -20,6 +22,18 @@ struct Textures
 	Texture2D pipeIntersection;
 };
 
+struct GameContext
+{
+	Camera2D camera = { 0 };
+	GameState gameState = GameState::BuildTiles;
+	TileActionType tileActionType = TileActionType::Walkway;
+	std::vector<Rectangle> uiRects;
+
+	//build drop down menu
+	int buildDropDownActiveItem = 0;
+	bool dropdownEditMode = false;
+};
+
 Textures loadAllTextures();
 
 void unloadAllTextures(Textures& texture);
@@ -30,4 +44,6 @@ float wrap(float min, float max, float value);
 
 bool TrackedGuiButton(std::vector<Rectangle>& uiRects, Rectangle rect, const char* label);
 
-void buildUIRects(std::vector<Rectangle>& uiRects, GameState gameState);
+bool TrackedGuiDropdownBox(std::vector<Rectangle>& uiRects, Rectangle bounds, const char* text, int* active, bool editMode);
+
+TileActionType getPipeType(std::unique_ptr<Pipe> pipes[BUILD_SIZE][BUILD_SIZE], Vector2 mousePos);
